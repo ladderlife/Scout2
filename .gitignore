@@ -38,6 +38,7 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+.idea
 
 # In case people do a `git add .` ...
 *.csv
