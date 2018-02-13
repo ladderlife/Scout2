@@ -6,6 +6,10 @@ import json
 import os
 import sys
 import webbrowser
+import pickle
+
+from deepdiff import DeepDiff
+from pprint import pprint
 
 try:
     from opinel.utils.aws import get_aws_account_id, get_partition_name
@@ -132,10 +136,20 @@ def main():
     # Save config and create HTML report
     html_report_path = report.save(aws_config, exceptions, args.force_write, args.debug)
 
-    # Open the report by default
-    if not args.no_browser:
-        printInfo('Opening the HTML report...')
-        url = 'file://%s' % os.path.abspath(html_report_path)
-        webbrowser.open(url, new=2)
+    findings = {'foo': True}
+    for service in aws_config['services']:
+        if aws_config['services'][service]['findings']:
+            findings[service] = aws_config['services'][service]['findings']
 
-    return 0
+    with open('golden.pickle', 'rb') as f:
+        golden = pickle.load(f)
+   
+    ddiff = DeepDiff(golden, findings)
+    if not ddiff:
+        return 0
+    else:
+        pprint(ddiff, indent=2)
+        with open('diff.out', 'w') as f:
+            f.write(repr(ddiff))
+        return 1
+

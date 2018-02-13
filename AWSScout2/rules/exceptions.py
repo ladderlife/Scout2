@@ -26,7 +26,10 @@ class RuleExceptions(object):
                     printDebug('Warning:: key error should not be happening')
                     continue
                 for item in aws_config['services'][service]['findings'][rule]['items']:
-                    if item not in self.exceptions[service][rule]:
+                    if item not in [
+                            item if isinstance(item, basestring) else item['id']
+                            for item in self.exceptions[service][rule]
+                    ]:
                         filtered_items.append(item)
                 aws_config['services'][service]['findings'][rule]['items'] = filtered_items
                 aws_config['services'][service]['findings'][rule]['flagged_items'] = len(aws_config['services'][service]['findings'][rule]['items'])
